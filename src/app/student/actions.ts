@@ -24,5 +24,5 @@ export async function submitTick(formData: FormData) {
   if (error) redirect(`/student?error=${encodeURIComponent(error.message)}`)
 
   revalidatePath('/student')
-  redirect('/student')
+  redirect('/student?success=true')
 }

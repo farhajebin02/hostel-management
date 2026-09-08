@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { getTomorrowISTDateString, isBeforeCutoff } from '@/lib/time'
 import { submitTick } from './actions'
@@ -5,9 +7,9 @@ import { submitTick } from './actions'
 export default async function StudentDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; success?: string }>
 }) {
-  const { error } = await searchParams
+  const { error, success } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const tomorrow = getTomorrowISTDateString()
@@ -33,6 +35,7 @@ export default async function StudentDashboard({
       <h1 className="mb-2 text-xl font-semibold">Tomorrow ({tomorrow})</h1>
       <p className="mb-4 text-sm text-gray-600">Daily cutoff: {cutoffTime} IST</p>
       {error && <p className="mb-4 rounded bg-red-100 p-2 text-sm text-red-700">{error}</p>}
+      {success && <p className="mb-4 rounded bg-green-100 p-2 text-sm text-green-700">Ticks saved successfully!</p>}
       {!canSubmit && (
         <p className="mb-4 rounded bg-yellow-100 p-2 text-sm text-yellow-800">
           Today&apos;s cutoff has passed. Tomorrow&apos;s ticks are locked.
