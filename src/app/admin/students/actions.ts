@@ -2,9 +2,11 @@
 
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth'
 
 export async function createStudent(formData: FormData) {
+  const { supabase } = await requireAdmin()
+
   const email = String(formData.get('email'))
   const fullName = String(formData.get('full_name'))
   const roomNumber = String(formData.get('room_number'))
@@ -26,13 +28,12 @@ export async function createStudent(formData: FormData) {
   if (photo instanceof File && photo.size > 0) {
     const safeName = photo.name.replace(/[^a-zA-Z0-9._-]/g, '_')
     photoPath = `${created.user.id}/${Date.now()}-${safeName}`
-    const { error: uploadError } = await adminClient.storage
+    const { error: uploadError } = await supabase.storage
       .from('profile-photos')
       .upload(photoPath, photo, { upsert: true })
     if (uploadError) throw new Error(uploadError.message)
   }
 
-  const supabase = await createClient()
   const { error: updateError } = await supabase
     .from('profiles')
     .update({
@@ -52,7 +53,7 @@ export async function createStudent(formData: FormData) {
 }
 
 export async function updateStudent(studentId: string, formData: FormData) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
 
   let photoPath: string | undefined
   const photo = formData.get('photo')
@@ -84,6 +85,7 @@ export async function updateStudent(studentId: string, formData: FormData) {
 }
 
 export async function deleteStudent(studentId: string) {
+  await requireAdmin()
   const adminClient = createAdminClient()
   const { error } = await adminClient.auth.admin.deleteUser(studentId)
   if (error) throw new Error(error.message)

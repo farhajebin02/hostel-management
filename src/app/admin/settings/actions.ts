@@ -1,11 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth'
 
 export async function updateCutoffTime(formData: FormData) {
+  const { supabase } = await requireAdmin()
   const cutoffTime = String(formData.get('cutoff_time'))
-  const supabase = await createClient()
 
   const { error } = await supabase
     .from('app_settings')

@@ -30,40 +30,75 @@ export default async function BillingPage({
 
   const supabase = await createClient()
 
-  const { data: students } = await supabase
+  const { data: closedBills, error: closedBillsError } = await supabase
+    .from('monthly_bills')
+    .select('student_id, breakfast_count, dinner_count, total_ticks, bill_amount')
+    .eq('month', start)
+
+  if (closedBillsError) throw new Error(closedBillsError.message)
+
+  const monthClosed = (closedBills?.length ?? 0) > 0
+
+  const { data: students, error: studentsError } = await supabase
     .from('profiles')
     .select('id, full_name')
     .eq('role', 'student')
     .eq('status', 'approved')
     .order('full_name', { ascending: true })
 
-  const { data: ticks } = await supabase
-    .from('meal_ticks')
-    .select('student_id, breakfast, dinner')
-    .gte('meal_date', start)
-    .lt('meal_date', end)
+  if (studentsError) throw new Error(studentsError.message)
 
-  const { data: alreadyClosed } = await supabase
-    .from('monthly_bills')
-    .select('student_id')
-    .eq('month', start)
+  type Row = {
+    id: string
+    name: string | null
+    breakfastCount: number
+    dinnerCount: number
+    totalTicks: number
+    bill: number
+  }
 
-  const monthClosed = (alreadyClosed?.length ?? 0) > 0
+  let rows: Row[]
 
-  const rows = (students ?? []).map((s) => {
-    const studentTicks = (ticks ?? []).filter((t) => t.student_id === s.id)
-    const breakfastCount = studentTicks.filter((t) => t.breakfast).length
-    const dinnerCount = studentTicks.filter((t) => t.dinner).length
-    const totalTicks = breakfastCount + dinnerCount
-    return {
-      id: s.id,
-      name: s.full_name,
-      breakfastCount,
-      dinnerCount,
-      totalTicks,
-      bill: calculateBill(totalTicks),
-    }
-  })
+  if (monthClosed) {
+    // Closed month: render the archived, immutable values from monthly_bills.
+    // Never recompute from live meal_ticks here - that would silently drift
+    // from what was actually billed if the formula constants ever change.
+    rows = (closedBills ?? []).map((b) => {
+      const student = (students ?? []).find((s) => s.id === b.student_id)
+      return {
+        id: b.student_id,
+        name: student?.full_name ?? '(former student)',
+        breakfastCount: b.breakfast_count,
+        dinnerCount: b.dinner_count,
+        totalTicks: b.total_ticks,
+        bill: b.bill_amount,
+      }
+    })
+  } else {
+    // Open month: live preview computed from this month's ticks so far.
+    const { data: ticks, error: ticksError } = await supabase
+      .from('meal_ticks')
+      .select('student_id, breakfast, dinner')
+      .gte('meal_date', start)
+      .lt('meal_date', end)
+
+    if (ticksError) throw new Error(ticksError.message)
+
+    rows = (students ?? []).map((s) => {
+      const studentTicks = (ticks ?? []).filter((t) => t.student_id === s.id)
+      const breakfastCount = studentTicks.filter((t) => t.breakfast).length
+      const dinnerCount = studentTicks.filter((t) => t.dinner).length
+      const totalTicks = breakfastCount + dinnerCount
+      return {
+        id: s.id,
+        name: s.full_name,
+        breakfastCount,
+        dinnerCount,
+        totalTicks,
+        bill: calculateBill(totalTicks),
+      }
+    })
+  }
 
   return (
     <div>

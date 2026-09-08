@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth'
 
 export async function approveStudent(studentId: string, formData: FormData) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
 
   let photoPath: string | null = null
   const photo = formData.get('photo')
