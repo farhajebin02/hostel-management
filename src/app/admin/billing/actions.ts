@@ -3,9 +3,16 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { calculateBill } from '@/lib/billing'
+import { getISTMonthBounds } from '@/lib/time'
 
 export async function generateAndCloseMonth(formData: FormData) {
   const start = String(formData.get('month')) // 'YYYY-MM-01'
+
+  const currentMonthStart = getISTMonthBounds().start
+  if (start > currentMonthStart) {
+    throw new Error('Cannot close a future month')
+  }
+
   const [y, m] = start.split('-').map(Number)
   const nextMonth = new Date(Date.UTC(y, m, 1)) // m is 1-indexed; Date.UTC's 0-indexed param rolls to next month
   const end = `${nextMonth.getUTCFullYear()}-${String(nextMonth.getUTCMonth() + 1).padStart(2, '0')}-01`

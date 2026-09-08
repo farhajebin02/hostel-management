@@ -4,9 +4,31 @@ import { getISTMonthBounds } from '@/lib/time'
 import { generateAndCloseMonth } from './actions'
 import { CloseMonthButton } from './CloseMonthButton'
 
-export default async function BillingPage() {
+function shiftMonth(monthStart: string, delta: number): string {
+  const [y, m] = monthStart.split('-').map(Number)
+  const shifted = new Date(Date.UTC(y, m - 1 + delta, 1))
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}-01`
+}
+
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>
+}) {
+  const { month: monthParam } = await searchParams
+  const currentMonthBounds = getISTMonthBounds()
+
+  const start = monthParam ? `${monthParam}-01` : currentMonthBounds.start
+  const [y, m] = start.split('-').map(Number)
+  const nextMonthDate = new Date(Date.UTC(y, m, 1))
+  const end = `${nextMonthDate.getUTCFullYear()}-${String(nextMonthDate.getUTCMonth() + 1).padStart(2, '0')}-01`
+  const month = start.slice(0, 7)
+
+  const prevMonth = shiftMonth(start, -1).slice(0, 7)
+  const nextMonth = shiftMonth(start, 1).slice(0, 7)
+  const canGoNext = nextMonth <= currentMonthBounds.month
+
   const supabase = await createClient()
-  const { start, end, month } = getISTMonthBounds()
 
   const { data: students } = await supabase
     .from('profiles')
@@ -45,7 +67,15 @@ export default async function BillingPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Mess bill — {month} {monthClosed ? '(final)' : '(live preview)'}</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Mess bill — {month} {monthClosed ? '(final)' : '(live preview)'}</h1>
+        <div className="flex gap-4 text-sm">
+          <a href={`/admin/billing?month=${prevMonth}`} className="text-blue-600 underline">&larr; {prevMonth}</a>
+          {canGoNext && (
+            <a href={`/admin/billing?month=${nextMonth}`} className="text-blue-600 underline">{nextMonth} &rarr;</a>
+          )}
+        </div>
+      </div>
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b">
