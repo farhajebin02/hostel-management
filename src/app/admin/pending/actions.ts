@@ -10,7 +10,8 @@ export async function approveStudent(studentId: string, formData: FormData) {
   let photoPath: string | null = null
   const photo = formData.get('photo')
   if (photo instanceof File && photo.size > 0) {
-    photoPath = `${studentId}/${Date.now()}-${photo.name}`
+    const safeName = photo.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    photoPath = `${studentId}/${Date.now()}-${safeName}`
     const { error: uploadError } = await supabase.storage
       .from('profile-photos')
       .upload(photoPath, photo, { upsert: true })
