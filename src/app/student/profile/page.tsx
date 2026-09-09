@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { Card } from '@/components/ui'
 
 export default async function StudentProfilePage() {
   const supabase = await createClient()
@@ -17,20 +18,37 @@ export default async function StudentProfilePage() {
     photoUrl = signed?.signedUrl ?? null
   }
 
+  const fields: { label: string; value: string | null | undefined }[] = [
+    { label: 'Room', value: profile?.room_number },
+    { label: 'Address', value: profile?.permanent_address },
+    { label: 'Personal contact', value: profile?.contact_personal },
+    { label: 'Emergency contact', value: profile?.contact_emergency },
+  ]
+
   return (
-    <div className="max-w-sm">
-      <h1 className="mb-4 text-xl font-semibold">My Profile</h1>
-      {photoUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photoUrl} alt="Profile" className="mb-4 h-32 w-32 rounded-full object-cover" />
-      )}
-      <dl className="flex flex-col gap-2 text-sm">
-        <div><dt className="font-medium">Name</dt><dd>{profile?.full_name}</dd></div>
-        <div><dt className="font-medium">Room</dt><dd>{profile?.room_number}</dd></div>
-        <div><dt className="font-medium">Address</dt><dd>{profile?.permanent_address}</dd></div>
-        <div><dt className="font-medium">Personal contact</dt><dd>{profile?.contact_personal}</dd></div>
-        <div><dt className="font-medium">Emergency contact</dt><dd>{profile?.contact_emergency}</dd></div>
-      </dl>
+    <div className="mx-auto max-w-sm">
+      <h1 className="text-2xl font-bold text-slate-900">My Profile</h1>
+      <Card className="mt-4">
+        <div className="flex flex-col items-center text-center">
+          {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photoUrl} alt="Profile" className="h-24 w-24 rounded-full border-4 border-indigo-50 object-cover" />
+          ) : (
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-indigo-100 text-2xl font-semibold text-indigo-600">
+              {profile?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+            </div>
+          )}
+          <h2 className="mt-3 text-lg font-semibold text-slate-900">{profile?.full_name}</h2>
+        </div>
+        <dl className="mt-6 flex flex-col divide-y divide-slate-100">
+          {fields.map((f) => (
+            <div key={f.label} className="flex justify-between gap-4 py-3 text-sm">
+              <dt className="text-slate-500">{f.label}</dt>
+              <dd className="text-right font-medium text-slate-900">{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </Card>
     </div>
   )
 }

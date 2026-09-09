@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { getTomorrowISTDateString, isBeforeCutoff } from '@/lib/time'
 import { submitTick } from './actions'
+import { Banner, Button, Card } from '@/components/ui'
 
 export default async function StudentDashboard({
   searchParams,
@@ -31,29 +32,43 @@ export default async function StudentDashboard({
     .maybeSingle()
 
   return (
-    <div className="max-w-sm">
-      <h1 className="mb-2 text-xl font-semibold">Tomorrow ({tomorrow})</h1>
-      <p className="mb-4 text-sm text-gray-600">Daily cutoff: {cutoffTime} IST</p>
-      {error && <p className="mb-4 rounded bg-red-100 p-2 text-sm text-red-700">{error}</p>}
-      {success && <p className="mb-4 rounded bg-green-100 p-2 text-sm text-green-700">Ticks saved successfully!</p>}
-      {!canSubmit && (
-        <p className="mb-4 rounded bg-yellow-100 p-2 text-sm text-yellow-800">
-          Today&apos;s cutoff has passed. Tomorrow&apos;s ticks are locked.
-        </p>
-      )}
-      <form action={submitTick} className="flex flex-col gap-3">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" name="breakfast" defaultChecked={tick?.breakfast ?? false} disabled={!canSubmit} />
-          Tomorrow&apos;s Breakfast
-        </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" name="dinner" defaultChecked={tick?.dinner ?? false} disabled={!canSubmit} />
-          Tomorrow&apos;s Dinner
-        </label>
-        <button type="submit" disabled={!canSubmit} className="rounded bg-blue-600 p-2 text-white disabled:opacity-50">
-          Save my ticks
-        </button>
-      </form>
+    <div className="mx-auto max-w-sm">
+      <h1 className="text-2xl font-bold text-slate-900">Tomorrow</h1>
+      <p className="mt-1 text-sm text-slate-500">{tomorrow} &middot; cutoff {cutoffTime} IST</p>
+
+      <div className="mt-4 flex flex-col gap-3">
+        {error && <Banner tone="error">{error}</Banner>}
+        {success && <Banner tone="success">Ticks saved successfully!</Banner>}
+        {!canSubmit && <Banner tone="warning">Today&apos;s cutoff has passed. Tomorrow&apos;s ticks are locked.</Banner>}
+      </div>
+
+      <Card className="mt-4">
+        <form action={submitTick} className="flex flex-col gap-3">
+          <label className="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 has-[:checked]:border-indigo-300 has-[:checked]:bg-indigo-50">
+            <input
+              type="checkbox"
+              name="breakfast"
+              defaultChecked={tick?.breakfast ?? false}
+              disabled={!canSubmit}
+              className="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <span className="text-sm font-medium text-slate-900">☀️ Breakfast</span>
+          </label>
+          <label className="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 has-[:checked]:border-indigo-300 has-[:checked]:bg-indigo-50">
+            <input
+              type="checkbox"
+              name="dinner"
+              defaultChecked={tick?.dinner ?? false}
+              disabled={!canSubmit}
+              className="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <span className="text-sm font-medium text-slate-900">🌙 Dinner</span>
+          </label>
+          <Button type="submit" disabled={!canSubmit} className="mt-2 w-full">
+            Save my meals
+          </Button>
+        </form>
+      </Card>
     </div>
   )
 }

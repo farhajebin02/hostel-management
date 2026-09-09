@@ -32,7 +32,7 @@ export default async function BillingPage({
 
   const { data: closedBills, error: closedBillsError } = await supabase
     .from('monthly_bills')
-    .select('student_id, breakfast_count, dinner_count, total_ticks, bill_amount')
+    .select('student_id, breakfast_count, dinner_count, total_ticks, bill_amount, rent_amount')
     .eq('month', start)
 
   if (closedBillsError) throw new Error(closedBillsError.message)
@@ -54,7 +54,9 @@ export default async function BillingPage({
     breakfastCount: number
     dinnerCount: number
     totalTicks: number
-    bill: number
+    messFee: number
+    rent: number
+    total: number
   }
 
   let rows: Row[]
@@ -71,11 +73,22 @@ export default async function BillingPage({
         breakfastCount: b.breakfast_count,
         dinnerCount: b.dinner_count,
         totalTicks: b.total_ticks,
-        bill: b.bill_amount,
+        messFee: b.bill_amount,
+        rent: b.rent_amount,
+        total: b.rent_amount + b.bill_amount,
       }
     })
   } else {
     // Open month: live preview computed from this month's ticks so far.
+    const { data: settings, error: settingsError } = await supabase
+      .from('app_settings')
+      .select('hostel_rent')
+      .eq('id', 1)
+      .single()
+
+    if (settingsError) throw new Error(settingsError.message)
+    const hostelRent = settings?.hostel_rent ?? 0
+
     const { data: ticks, error: ticksError } = await supabase
       .from('meal_ticks')
       .select('student_id, breakfast, dinner')
@@ -89,50 +102,65 @@ export default async function BillingPage({
       const breakfastCount = studentTicks.filter((t) => t.breakfast).length
       const dinnerCount = studentTicks.filter((t) => t.dinner).length
       const totalTicks = breakfastCount + dinnerCount
+      const messFee = calculateBill(totalTicks)
       return {
         id: s.id,
         name: s.full_name,
         breakfastCount,
         dinnerCount,
         totalTicks,
-        bill: calculateBill(totalTicks),
+        messFee,
+        rent: hostelRent,
+        total: hostelRent + messFee,
       }
     })
   }
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Mess bill — {month} {monthClosed ? '(final)' : '(live preview)'}</h1>
-        <div className="flex gap-4 text-sm">
-          <a href={`/admin/billing?month=${prevMonth}`} className="text-blue-600 underline">&larr; {prevMonth}</a>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Mess Bill</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            {month} <span className={monthClosed ? 'font-medium text-emerald-600' : 'font-medium text-amber-600'}>{monthClosed ? '· Final' : '· Live preview'}</span>
+          </p>
+        </div>
+        <div className="flex gap-4 text-sm font-medium">
+          <a href={`/admin/billing?month=${prevMonth}`} className="text-indigo-600 hover:text-indigo-700">&larr; {prevMonth}</a>
           {canGoNext && (
-            <a href={`/admin/billing?month=${nextMonth}`} className="text-blue-600 underline">{nextMonth} &rarr;</a>
+            <a href={`/admin/billing?month=${nextMonth}`} className="text-indigo-600 hover:text-indigo-700">{nextMonth} &rarr;</a>
           )}
         </div>
       </div>
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="p-2">Student</th>
-            <th className="p-2">Breakfast</th>
-            <th className="p-2">Dinner</th>
-            <th className="p-2">Total ticks</th>
-            <th className="p-2">Bill</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-b">
-              <td className="p-2">{r.name}</td>
-              <td className="p-2">{r.breakfastCount}</td>
-              <td className="p-2">{r.dinnerCount}</td>
-              <td className="p-2">{r.totalTicks}</td>
-              <td className="p-2">₹{r.bill}</td>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead>
+            <tr className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <th className="px-4 py-2.5 font-medium">Student</th>
+              <th className="px-4 py-2.5 text-center font-medium">Breakfast</th>
+              <th className="px-4 py-2.5 text-center font-medium">Dinner</th>
+              <th className="px-4 py-2.5 text-center font-medium">Ticks</th>
+              <th className="px-4 py-2.5 text-right font-medium">Rent</th>
+              <th className="px-4 py-2.5 text-right font-medium">Mess fee</th>
+              <th className="px-4 py-2.5 text-right font-medium">Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.map((r) => (
+              <tr key={r.id} className="hover:bg-slate-50">
+                <td className="px-4 py-3 font-medium text-slate-900">{r.name}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{r.breakfastCount}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{r.dinnerCount}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{r.totalTicks}</td>
+                <td className="px-4 py-3 text-right text-slate-600">₹{r.rent}</td>
+                <td className="px-4 py-3 text-right text-slate-600">₹{r.messFee}</td>
+                <td className="px-4 py-3 text-right font-semibold text-slate-900">₹{r.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <form action={generateAndCloseMonth} className="mt-6">
         <input type="hidden" name="month" value={start} />

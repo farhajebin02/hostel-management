@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getTomorrowISTDateString } from '@/lib/time'
+import { Card } from '@/components/ui'
 
 export default async function AnalyticsPage() {
   const supabase = await createClient()
@@ -16,16 +17,19 @@ export default async function AnalyticsPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Prep quantities for {tomorrow}</h1>
-      <div className="flex gap-6">
-        <div className="rounded border p-4 text-center">
-          <div className="text-3xl font-bold">{breakfastCount}</div>
-          <div className="text-sm text-gray-600">Breakfast</div>
-        </div>
-        <div className="rounded border p-4 text-center">
-          <div className="text-3xl font-bold">{dinnerCount}</div>
-          <div className="text-sm text-gray-600">Dinner</div>
-        </div>
+      <h1 className="text-2xl font-bold text-slate-900">Prep Analytics</h1>
+      <p className="mt-1 text-sm text-slate-500">How much to prepare for tomorrow, {tomorrow}.</p>
+      <div className="mt-6 grid max-w-md grid-cols-2 gap-4">
+        <Card className="text-center">
+          <div className="text-3xl">☀️</div>
+          <div className="mt-2 text-3xl font-bold text-indigo-600">{breakfastCount}</div>
+          <div className="mt-1 text-sm font-medium text-slate-500">Breakfast</div>
+        </Card>
+        <Card className="text-center">
+          <div className="text-3xl">🌙</div>
+          <div className="mt-2 text-3xl font-bold text-indigo-600">{dinnerCount}</div>
+          <div className="mt-1 text-sm font-medium text-slate-500">Dinner</div>
+        </Card>
       </div>
     </div>
   )

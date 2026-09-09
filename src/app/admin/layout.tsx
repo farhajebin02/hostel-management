@@ -15,19 +15,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!profile || profile.role !== 'admin') redirect('/login')
 
   return (
-    <div>
-      <nav className="flex flex-wrap items-center gap-4 border-b p-4 text-sm">
-        <span className="mr-4 font-semibold">Hostel Manager — Admin</span>
-        <a href="/admin/pending">Pending Approvals</a>
-        <a href="/admin/students">Students</a>
-        <a href="/admin/analytics">Prep Analytics</a>
-        <a href="/admin/billing">Billing</a>
-        <a href="/admin/settings">Settings</a>
-        <form action="/logout" method="post" className="ml-auto">
-          <button type="submit">Log out</button>
-        </form>
+    <div className="min-h-screen bg-slate-50">
+      <nav className="sticky top-0 z-10 border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-sm font-medium text-slate-600">
+          <span className="mr-2 font-bold text-slate-900">Hostel Manager <span className="font-normal text-indigo-600">Admin</span></span>
+          <a href="/admin/pending" className="hover:text-indigo-600">Pending</a>
+          <a href="/admin/students" className="hover:text-indigo-600">Students</a>
+          <a href="/admin/analytics" className="hover:text-indigo-600">Prep Analytics</a>
+          <a href="/admin/billing" className="hover:text-indigo-600">Billing</a>
+          <a href="/admin/settings" className="hover:text-indigo-600">Settings</a>
+          <form action="/logout" method="post" className="ml-auto">
+            <button type="submit" className="hover:text-indigo-600">Log out</button>
+          </form>
+        </div>
       </nav>
-      <div className="p-4">{children}</div>
+      <div className="mx-auto max-w-5xl px-4 py-6">{children}</div>
     </div>
   )
 }

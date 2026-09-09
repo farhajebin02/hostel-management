@@ -1,10 +1,12 @@
 'use client'
 
+import { Button } from '@/components/ui'
+
 export function DeleteButton() {
   return (
-    <button
+    <Button
       type="submit"
-      className="rounded bg-red-600 p-2 text-white"
+      variant="danger"
       onClick={(e) => {
         if (!confirm('Delete this student permanently? This cannot be undone.')) {
           e.preventDefault()
@@ -12,6 +14,6 @@ export function DeleteButton() {
       }}
     >
       Delete student
-    </button>
+    </Button>
   )
 }

@@ -19,6 +19,15 @@ export async function generateAndCloseMonth(formData: FormData) {
   const nextMonth = new Date(Date.UTC(y, m, 1)) // m is 1-indexed; Date.UTC's 0-indexed param rolls to next month
   const end = `${nextMonth.getUTCFullYear()}-${String(nextMonth.getUTCMonth() + 1).padStart(2, '0')}-01`
 
+  const { data: settings, error: settingsError } = await supabase
+    .from('app_settings')
+    .select('hostel_rent')
+    .eq('id', 1)
+    .single()
+
+  if (settingsError) throw new Error(settingsError.message)
+  const hostelRent = settings?.hostel_rent ?? 0
+
   const { data: students, error: studentsError } = await supabase
     .from('profiles')
     .select('id')
@@ -47,6 +56,7 @@ export async function generateAndCloseMonth(formData: FormData) {
       dinner_count,
       total_ticks,
       bill_amount: calculateBill(total_ticks),
+      rent_amount: hostelRent,
     }
   })
 
