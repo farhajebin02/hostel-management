@@ -26,8 +26,15 @@ export default async function SignupPage({
             <input name="full_name" placeholder="Your full name" required className={inputClass} />
           </label>
           <label className={labelClass}>
-            Email
-            <input name="email" type="email" placeholder="you@example.com" required className={inputClass} />
+            Phone number
+            <input
+              name="phone"
+              type="tel"
+              inputMode="numeric"
+              placeholder="10-digit mobile number"
+              required
+              className={inputClass}
+            />
           </label>
           <label className={labelClass}>
             Password

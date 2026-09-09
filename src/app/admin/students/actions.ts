@@ -3,24 +3,33 @@
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth'
+import { isValidPhone, normalizePhone, phoneToEmail } from '@/lib/phone'
 
 export async function createStudent(formData: FormData) {
   const { supabase } = await requireAdmin()
 
-  const email = String(formData.get('email'))
+  const phone = String(formData.get('phone'))
+  const startingPassword = String(formData.get('starting_password'))
   const fullName = String(formData.get('full_name'))
   const roomNumber = String(formData.get('room_number'))
   const permanentAddress = String(formData.get('permanent_address'))
   const contactPersonal = String(formData.get('contact_personal'))
   const contactEmergency = String(formData.get('contact_emergency'))
 
+  if (!isValidPhone(phone)) {
+    throw new Error('Enter a valid 10-digit mobile number')
+  }
+
   const adminClient = createAdminClient()
-  const { data: created, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: fullName },
+  const { data: created, error: createError } = await adminClient.auth.admin.createUser({
+    email: phoneToEmail(phone),
+    password: startingPassword,
+    email_confirm: true,
+    user_metadata: { full_name: fullName, phone: normalizePhone(phone) },
   })
 
-  if (inviteError || !created.user) {
-    throw new Error(inviteError?.message ?? 'Failed to invite student')
+  if (createError || !created.user) {
+    throw new Error(createError?.message ?? 'Failed to create student account')
   }
 
   let photoPath: string | null = null

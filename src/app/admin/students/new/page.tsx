@@ -8,8 +8,12 @@ export default function NewStudentPage() {
       <Card className="mt-4">
         <form action={createStudent} className="flex flex-col gap-4">
           <label className={labelClass}>
-            Email
-            <input name="email" type="email" required className={inputClass} />
+            Phone number
+            <input name="phone" type="tel" inputMode="numeric" placeholder="10-digit mobile number" required className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Starting password
+            <input name="starting_password" type="text" placeholder="Tell this to the student" required minLength={6} className={inputClass} />
           </label>
           <label className={labelClass}>
             Full name

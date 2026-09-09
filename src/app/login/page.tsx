@@ -22,8 +22,8 @@ export default async function LoginPage({
         )}
         <form action={login} className="flex flex-col gap-4">
           <label className={labelClass}>
-            Email
-            <input name="email" type="email" placeholder="you@example.com" required className={inputClass} />
+            Phone number or email
+            <input name="identifier" type="text" placeholder="10-digit mobile number" required className={inputClass} />
           </label>
           <label className={labelClass}>
             Password

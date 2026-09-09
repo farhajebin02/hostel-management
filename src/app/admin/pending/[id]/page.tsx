@@ -12,7 +12,7 @@ export default async function ReviewPendingStudent({
   const supabase = await createClient()
   const { data: student } = await supabase
     .from('profiles')
-    .select('id, full_name')
+    .select('id, full_name, contact_personal')
     .eq('id', id)
     .eq('status', 'pending')
     .single()
@@ -40,7 +40,7 @@ export default async function ReviewPendingStudent({
           </label>
           <label className={labelClass}>
             Personal contact number
-            <input name="contact_personal" required className={inputClass} />
+            <input name="contact_personal" defaultValue={student.contact_personal ?? ''} required className={inputClass} />
           </label>
           <label className={labelClass}>
             Emergency contact number
