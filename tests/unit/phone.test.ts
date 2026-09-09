@@ -36,6 +36,6 @@ describe('isValidPhone', () => {
 
 describe('phoneToEmail', () => {
   it('builds a synthetic email from a normalized phone number', () => {
-    expect(phoneToEmail('+91 98765 43210')).toBe('9876543210@phone.hostel-manager.local')
+    expect(phoneToEmail('+91 98765 43210')).toBe('9876543210@phone.hostel-manager-app.com')
   })
 })

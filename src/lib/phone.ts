@@ -1,4 +1,9 @@
-const PHONE_DOMAIN = 'phone.hostel-manager.local'
+// Supabase's signup email validator rejects reserved/special-use TLDs like
+// .local, .test, .invalid (RFC 2606) as "invalid" even though no real
+// delivery ever happens here - this synthetic address is never emailed,
+// only used as an internal identity key. An ordinary TLD like .com passes
+// validation without needing to actually own/register the domain.
+const PHONE_DOMAIN = 'phone.hostel-manager-app.com'
 
 export function normalizePhone(input: string): string {
   let digits = input.replace(/\D/g, '')
