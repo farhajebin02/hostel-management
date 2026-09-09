@@ -38,6 +38,13 @@ export function isBeforeCutoff(now: Date, cutoffTime: string): boolean {
   return hour * 60 + minute < cutoffHour * 60 + cutoffMinute
 }
 
+export function formatTime12Hour(time24: string): string {
+  const [hour, minute] = time24.split(':').map(Number)
+  const period = hour >= 12 ? 'PM' : 'AM'
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12
+  return `${hour12}:${String(minute).padStart(2, '0')} ${period}`
+}
+
 export function getISTMonthBounds(now: Date = new Date()): { start: string; end: string; month: string } {
   const { year, month } = getISTParts(now)
   const pad = (n: number) => String(n).padStart(2, '0')

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isBeforeCutoff, getISTDateString, getTomorrowISTDateString, getISTMonthBounds } from '@/lib/time'
+import { isBeforeCutoff, getISTDateString, getTomorrowISTDateString, getISTMonthBounds, formatTime12Hour } from '@/lib/time'
 
 describe('isBeforeCutoff', () => {
   it('returns true when now is before the cutoff time in IST', () => {
@@ -32,5 +32,20 @@ describe('getISTMonthBounds', () => {
     // 2026-09-08T10:00:00Z = 2026-09-08 15:30 IST
     const now = new Date('2026-09-08T10:00:00Z')
     expect(getISTMonthBounds(now)).toEqual({ start: '2026-09-01', end: '2026-10-01', month: '2026-09' })
+  })
+})
+
+describe('formatTime12Hour', () => {
+  it('formats an evening time', () => {
+    expect(formatTime12Hour('22:00')).toBe('10:00 PM')
+  })
+
+  it('formats a morning time', () => {
+    expect(formatTime12Hour('09:05')).toBe('9:05 AM')
+  })
+
+  it('formats midnight and noon correctly', () => {
+    expect(formatTime12Hour('00:00')).toBe('12:00 AM')
+    expect(formatTime12Hour('12:00')).toBe('12:00 PM')
   })
 })
