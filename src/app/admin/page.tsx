@@ -1,52 +1,64 @@
 import { createClient } from '@/lib/supabase/server'
 import { getTomorrowMealStats } from '@/lib/mealStats'
-import { Card } from '@/components/ui'
+import { WelcomeCard } from '@/components/WelcomeCard'
+import { StatCard } from '@/components/StatCard'
+import { ActionCard } from '@/components/ActionCard'
+import { Users, Sun, Moon, CheckCircle2, Hourglass, ClipboardCheck, BarChart3, Receipt, Settings } from 'lucide-react'
 
-const links = [
-  { href: '/admin/pending', title: 'Pending Approvals', desc: 'Review and approve new student sign-ups.' },
-  { href: '/admin/students', title: 'Students', desc: 'View, edit, and manage every student profile.' },
-  { href: '/admin/analytics', title: 'Prep Analytics', desc: "Tomorrow's breakfast and dinner counts." },
-  { href: '/admin/billing', title: 'Billing', desc: 'Monthly mess bill preview and month close.' },
-  { href: '/admin/settings', title: 'Settings', desc: 'Daily cutoff time and hostel rent.' },
+const actions = [
+  { href: '/admin/pending', label: 'Pending Selections', icon: ClipboardCheck, iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  { href: '/admin/students', label: 'Manage Students', icon: Users, iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+  { href: '/admin/analytics', label: 'Prep Analytics', icon: BarChart3, iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+  { href: '/admin/billing', label: 'Billing', icon: Receipt, iconBg: 'bg-rose-100', iconColor: 'text-rose-600' },
+  { href: '/admin/settings', label: 'Settings', icon: Settings, iconBg: 'bg-slate-100', iconColor: 'text-slate-600' },
 ]
 
 export default async function AdminHome() {
   const supabase = await createClient()
   const stats = await getTomorrowMealStats(supabase)
 
+  const formattedDate = new Date(`${stats.tomorrow}T00:00:00Z`).toLocaleDateString('en-US', {
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
   const statCards = [
-    { icon: '🧑‍🎓', value: stats.totalStudents, label: 'Total Students', color: 'text-slate-900' },
-    { icon: '☀️', value: stats.breakfastCount, label: "Tomorrow's Breakfast", color: 'text-indigo-600' },
-    { icon: '🌙', value: stats.dinnerCount, label: "Tomorrow's Dinner", color: 'text-indigo-600' },
-    { icon: '✅', value: stats.submittedCount, label: 'Submitted', color: 'text-emerald-600' },
-    { icon: '⏳', value: stats.notSubmittedCount, label: 'Not Submitted', color: 'text-amber-600' },
+    { icon: Users, value: stats.totalStudents, label: 'Total Students', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600', href: '/admin/students' },
+    { icon: Sun, value: stats.breakfastCount, label: "Tomorrow's Breakfast", iconBg: 'bg-amber-100', iconColor: 'text-amber-600', href: '/admin/analytics' },
+    { icon: Moon, value: stats.dinnerCount, label: "Tomorrow's Dinner", iconBg: 'bg-rose-100', iconColor: 'text-rose-600', href: '/admin/analytics' },
+    { icon: CheckCircle2, value: stats.submittedCount, label: 'Submitted', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', href: '/admin/analytics' },
   ]
+  const notSubmittedCard = {
+    icon: Hourglass,
+    value: stats.notSubmittedCount,
+    label: 'Not Submitted',
+    iconBg: 'bg-red-100',
+    iconColor: 'text-red-600',
+    href: '/admin/analytics',
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-900">Welcome, Admin</h1>
-      <p className="mt-1 text-sm text-slate-500">Here&apos;s what&apos;s happening for tomorrow, {stats.tomorrow}.</p>
+    <div className="flex flex-col gap-6">
+      <WelcomeCard greeting="Admin 👋" subtitle={`Here's what's happening for tomorrow, ${formattedDate}.`} />
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4">
         {statCards.map((s) => (
-          <Card key={s.label} className="text-center">
-            <div className="text-2xl">{s.icon}</div>
-            <div className={`mt-2 text-2xl font-bold ${s.color}`}>{s.value}</div>
-            <div className="mt-1 text-xs font-medium text-slate-500">{s.label}</div>
-          </Card>
+          <StatCard key={s.label} {...s} />
         ))}
       </div>
+      <StatCard {...notSubmittedCard} />
 
-      <h2 className="mt-8 text-sm font-semibold uppercase tracking-wide text-slate-500">Manage</h2>
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
-        {links.map((l) => (
-          <a key={l.href} href={l.href}>
-            <Card className="h-full transition-shadow hover:shadow-md">
-              <h2 className="font-semibold text-slate-900">{l.title}</h2>
-              <p className="mt-1 text-sm text-slate-500">{l.desc}</p>
-            </Card>
-          </a>
-        ))}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">Quick Actions</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {actions.map((a) => (
+            <ActionCard key={a.href} {...a} />
+          ))}
+        </div>
       </div>
     </div>
   )
