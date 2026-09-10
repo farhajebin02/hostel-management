@@ -32,10 +32,19 @@ export function getTomorrowISTDateString(now: Date = new Date()): string {
   return `${tomorrow.getUTCFullYear()}-${String(tomorrow.getUTCMonth() + 1).padStart(2, '0')}-${String(tomorrow.getUTCDate()).padStart(2, '0')}`
 }
 
-export function isBeforeCutoff(now: Date, cutoffTime: string): boolean {
+export type TickWindowStatus = 'before-open' | 'open' | 'after-close'
+
+export function getTickWindowStatus(now: Date, openTime: string, closeTime: string): TickWindowStatus {
   const { hour, minute } = getISTParts(now)
-  const [cutoffHour, cutoffMinute] = cutoffTime.split(':').map(Number)
-  return hour * 60 + minute < cutoffHour * 60 + cutoffMinute
+  const nowMinutes = hour * 60 + minute
+  const [openHour, openMinute] = openTime.split(':').map(Number)
+  const [closeHour, closeMinute] = closeTime.split(':').map(Number)
+  const openMinutes = openHour * 60 + openMinute
+  const closeMinutes = closeHour * 60 + closeMinute
+
+  if (nowMinutes < openMinutes) return 'before-open'
+  if (nowMinutes >= closeMinutes) return 'after-close'
+  return 'open'
 }
 
 export function formatTime12Hour(time24: string): string {

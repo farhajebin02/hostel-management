@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import { updateCutoffTime, updateHostelRent } from './actions'
+import { updateTickWindow, updateHostelRent } from './actions'
 import { Button, Card, inputClass, labelClass } from '@/components/ui'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: settings } = await supabase
     .from('app_settings')
-    .select('cutoff_time, hostel_rent')
+    .select('open_time, cutoff_time, hostel_rent')
     .eq('id', 1)
     .single()
 
@@ -15,11 +15,23 @@ export default async function SettingsPage() {
       <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
 
       <Card className="mt-4">
-        <h2 className="font-semibold text-slate-900">Daily cutoff time</h2>
-        <p className="mt-1 text-sm text-slate-500">Students can tick tomorrow&apos;s meals until this time (IST).</p>
-        <form action={updateCutoffTime} className="mt-4 flex flex-col gap-3">
+        <h2 className="font-semibold text-slate-900">Meal selection window</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Students can only tick tomorrow&apos;s meals between these two times (IST).
+        </p>
+        <form action={updateTickWindow} className="mt-4 flex flex-col gap-3">
           <label className={labelClass}>
-            Cutoff time (IST)
+            Opens at
+            <input
+              type="time"
+              name="open_time"
+              defaultValue={settings?.open_time?.slice(0, 5) ?? '16:00'}
+              required
+              className={inputClass}
+            />
+          </label>
+          <label className={labelClass}>
+            Closes at
             <input
               type="time"
               name="cutoff_time"
@@ -28,7 +40,7 @@ export default async function SettingsPage() {
               className={inputClass}
             />
           </label>
-          <Button type="submit">Save cutoff time</Button>
+          <Button type="submit">Save window</Button>
         </form>
       </Card>
 

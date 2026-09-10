@@ -3,13 +3,18 @@
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth'
 
-export async function updateCutoffTime(formData: FormData) {
+export async function updateTickWindow(formData: FormData) {
   const { supabase } = await requireAdmin()
+  const openTime = String(formData.get('open_time'))
   const cutoffTime = String(formData.get('cutoff_time'))
+
+  if (openTime >= cutoffTime) {
+    throw new Error('Opening time must be earlier than the cutoff time')
+  }
 
   const { error } = await supabase
     .from('app_settings')
-    .update({ cutoff_time: cutoffTime, updated_at: new Date().toISOString() })
+    .update({ open_time: openTime, cutoff_time: cutoffTime, updated_at: new Date().toISOString() })
     .eq('id', 1)
 
   if (error) throw new Error(error.message)

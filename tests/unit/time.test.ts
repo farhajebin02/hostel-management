@@ -1,20 +1,31 @@
 import { describe, it, expect } from 'vitest'
-import { isBeforeCutoff, getISTDateString, getTomorrowISTDateString, getISTMonthBounds, formatTime12Hour } from '@/lib/time'
+import { getTickWindowStatus, getISTDateString, getTomorrowISTDateString, getISTMonthBounds, formatTime12Hour } from '@/lib/time'
 
-describe('isBeforeCutoff', () => {
-  it('returns true when now is before the cutoff time in IST', () => {
-    // 2026-09-08T16:29:00Z = 2026-09-08 21:59 IST
-    expect(isBeforeCutoff(new Date('2026-09-08T16:29:00Z'), '22:00')).toBe(true)
+describe('getTickWindowStatus', () => {
+  // Window under test: 16:00 (4 PM) to 22:00 (10 PM) IST
+  it('returns before-open when now is earlier than the opening time', () => {
+    // 2026-09-08T10:00:00Z = 2026-09-08 15:30 IST
+    expect(getTickWindowStatus(new Date('2026-09-08T10:00:00Z'), '16:00', '22:00')).toBe('before-open')
   })
 
-  it('returns false exactly at the cutoff time in IST', () => {
+  it('returns open exactly at the opening time', () => {
+    // 2026-09-08T10:30:00Z = 2026-09-08 16:00 IST
+    expect(getTickWindowStatus(new Date('2026-09-08T10:30:00Z'), '16:00', '22:00')).toBe('open')
+  })
+
+  it('returns open in the middle of the window', () => {
+    // 2026-09-08T13:00:00Z = 2026-09-08 18:30 IST
+    expect(getTickWindowStatus(new Date('2026-09-08T13:00:00Z'), '16:00', '22:00')).toBe('open')
+  })
+
+  it('returns after-close exactly at the cutoff time', () => {
     // 2026-09-08T16:30:00Z = 2026-09-08 22:00 IST
-    expect(isBeforeCutoff(new Date('2026-09-08T16:30:00Z'), '22:00')).toBe(false)
+    expect(getTickWindowStatus(new Date('2026-09-08T16:30:00Z'), '16:00', '22:00')).toBe('after-close')
   })
 
-  it('returns false when now is after the cutoff time in IST', () => {
-    // 2026-09-08T16:31:00Z = 2026-09-08 22:01 IST
-    expect(isBeforeCutoff(new Date('2026-09-08T16:31:00Z'), '22:00')).toBe(false)
+  it('returns after-close when now is later than the cutoff time', () => {
+    // 2026-09-08T18:00:00Z = 2026-09-08 23:30 IST
+    expect(getTickWindowStatus(new Date('2026-09-08T18:00:00Z'), '16:00', '22:00')).toBe('after-close')
   })
 })
 

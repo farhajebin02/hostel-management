@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
-import { formatTime12Hour, getTomorrowISTDateString, isBeforeCutoff } from '@/lib/time'
+import { formatTime12Hour, getTomorrowISTDateString, getTickWindowStatus } from '@/lib/time'
 import { submitTick } from './actions'
 import { Banner, Button, Card } from '@/components/ui'
 import { WelcomeCard } from '@/components/WelcomeCard'
-import { Sun, Moon, Lock } from 'lucide-react'
+import { Sun, Moon, Lock, Clock } from 'lucide-react'
 
 export default async function StudentDashboard({
   searchParams,
@@ -27,12 +27,13 @@ export default async function StudentDashboard({
 
   const { data: settings } = await supabase
     .from('app_settings')
-    .select('cutoff_time')
+    .select('open_time, cutoff_time')
     .eq('id', 1)
     .single()
 
+  const openTime = settings?.open_time?.slice(0, 5) ?? '16:00'
   const cutoffTime = settings?.cutoff_time?.slice(0, 5) ?? '22:00'
-  const canSubmit = isBeforeCutoff(new Date(), cutoffTime)
+  const windowStatus = getTickWindowStatus(new Date(), openTime, cutoffTime)
 
   const { data: tick } = await supabase
     .from('meal_ticks')
@@ -66,7 +67,19 @@ export default async function StudentDashboard({
           <p className="text-xs text-slate-400">{tomorrow}</p>
         </div>
 
-        {!canSubmit ? (
+        {windowStatus === 'before-open' ? (
+          <Card className="mt-3 border-amber-100 bg-amber-50 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+              <Clock className="h-7 w-7 text-amber-600" />
+            </div>
+            <h3 className="mt-3 text-lg font-bold text-amber-800">Meal Selection Not Open Yet</h3>
+            <p className="mt-1 text-sm text-amber-700">
+              Selection opens at {formatTime12Hour(openTime)} IST.
+              <br />
+              Come back then to choose tomorrow&apos;s meals.
+            </p>
+          </Card>
+        ) : windowStatus === 'after-close' ? (
           <Card className="mt-3 border-red-100 bg-red-50 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
               <Lock className="h-7 w-7 text-red-600" />
@@ -118,7 +131,7 @@ export default async function StudentDashboard({
         )}
 
         <p className="mt-4 text-center text-xs text-slate-400">
-          Meal selection closes at {formatTime12Hour(cutoffTime)}.
+          Meal selection is open from {formatTime12Hour(openTime)} to {formatTime12Hour(cutoffTime)}.
         </p>
       </div>
     </div>
