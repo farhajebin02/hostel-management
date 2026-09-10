@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import type { NavItem } from '@/lib/navigation'
+import { ADMIN_NAV, STUDENT_NAV } from '@/lib/navigation'
 
 const HOME_PATHS = new Set(['/admin', '/student'])
 
-export function BottomNav({ items }: { items: NavItem[] }) {
+export function BottomNav({ role }: { role: 'admin' | 'student' }) {
   const pathname = usePathname()
+  const items = role === 'admin' ? ADMIN_NAV : STUDENT_NAV
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur md:hidden">

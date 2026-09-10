@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppHeader } from '@/components/AppHeader'
 import { BottomNav } from '@/components/BottomNav'
-import { STUDENT_NAV } from '@/lib/navigation'
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -24,10 +23,10 @@ export default async function StudentLayout({ children }: { children: React.Reac
         title="Hostel Manager"
         subtitle="Student Dashboard"
         userName={profile.full_name || 'Student'}
-        navItems={STUDENT_NAV}
+        role="student"
       />
       <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
-      <BottomNav items={STUDENT_NAV} />
+      <BottomNav role="student" />
     </div>
   )
 }

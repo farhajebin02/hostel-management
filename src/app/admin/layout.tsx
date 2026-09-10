@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppHeader } from '@/components/AppHeader'
 import { BottomNav } from '@/components/BottomNav'
-import { ADMIN_NAV } from '@/lib/navigation'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -23,10 +22,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         title="Hostel Manager"
         subtitle="Admin Dashboard"
         userName={profile.full_name || 'Admin'}
-        navItems={ADMIN_NAV}
+        role="admin"
       />
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
-      <BottomNav items={ADMIN_NAV} />
+      <BottomNav role="admin" />
     </div>
   )
 }

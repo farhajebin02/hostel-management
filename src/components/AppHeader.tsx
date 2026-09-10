@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { ChevronDown, Home, LogOut } from 'lucide-react'
-import type { NavItem } from '@/lib/navigation'
+import { ADMIN_NAV, STUDENT_NAV } from '@/lib/navigation'
 
 const HOME_PATHS = new Set(['/admin', '/student'])
 
@@ -12,14 +12,15 @@ export function AppHeader({
   title,
   subtitle,
   userName,
-  navItems,
+  role,
 }: {
   title: string
   subtitle: string
   userName: string
-  navItems: NavItem[]
+  role: 'admin' | 'student'
 }) {
   const pathname = usePathname()
+  const navItems = role === 'admin' ? ADMIN_NAV : STUDENT_NAV
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
