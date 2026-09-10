@@ -47,10 +47,8 @@ export default async function StudentDashboard({
 
   return (
     <div className="flex flex-col gap-6">
-      <WelcomeCard
-        greeting={`Hi, ${firstName} 👋`}
-        subtitle={`Room ${profile?.room_number ?? '—'} · Let's plan your meals for tomorrow.`}
-      />
+      <WelcomeCard greeting={`${firstName} 👋`} subtitle="Plan your meals for tomorrow." />
+      <p className="-mt-3 text-xs text-slate-400">Room {profile?.room_number ?? '—'}</p>
 
       <div className="flex flex-col gap-3">
         {error && <Banner tone="error">{error}</Banner>}
