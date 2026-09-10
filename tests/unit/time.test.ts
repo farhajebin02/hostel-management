@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { getTickWindowStatus, getISTDateString, getTomorrowISTDateString, getISTMonthBounds, formatTime12Hour } from '@/lib/time'
+import {
+  getTickWindowStatus,
+  getISTDateString,
+  getTomorrowISTDateString,
+  getISTMonthBounds,
+  formatTime12Hour,
+  getISTGreeting,
+  formatFriendlyDate,
+  formatFriendlyMonth,
+} from '@/lib/time'
 
 describe('getTickWindowStatus', () => {
   // Window under test: 16:00 (4 PM) to 22:00 (10 PM) IST
@@ -58,5 +67,34 @@ describe('formatTime12Hour', () => {
   it('formats midnight and noon correctly', () => {
     expect(formatTime12Hour('00:00')).toBe('12:00 AM')
     expect(formatTime12Hour('12:00')).toBe('12:00 PM')
+  })
+})
+
+describe('getISTGreeting', () => {
+  it('returns Good morning before noon IST', () => {
+    // 2026-09-08T03:00:00Z = 2026-09-08 08:30 IST
+    expect(getISTGreeting(new Date('2026-09-08T03:00:00Z'))).toBe('Good morning')
+  })
+
+  it('returns Good afternoon in the afternoon IST', () => {
+    // 2026-09-08T08:00:00Z = 2026-09-08 13:30 IST
+    expect(getISTGreeting(new Date('2026-09-08T08:00:00Z'))).toBe('Good afternoon')
+  })
+
+  it('returns Good evening at night IST', () => {
+    // 2026-09-08T14:00:00Z = 2026-09-08 19:30 IST
+    expect(getISTGreeting(new Date('2026-09-08T14:00:00Z'))).toBe('Good evening')
+  })
+})
+
+describe('formatFriendlyDate', () => {
+  it('formats a date string as a full weekday, short month, and day', () => {
+    expect(formatFriendlyDate('2026-09-12')).toBe('Saturday, Sep 12')
+  })
+})
+
+describe('formatFriendlyMonth', () => {
+  it('formats a YYYY-MM string as a full month name and year', () => {
+    expect(formatFriendlyMonth('2026-09')).toBe('September 2026')
   })
 })

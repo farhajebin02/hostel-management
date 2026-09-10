@@ -47,6 +47,33 @@ export function getTickWindowStatus(now: Date, openTime: string, closeTime: stri
   return 'open'
 }
 
+export function getISTGreeting(now: Date = new Date()): string {
+  const { hour } = getISTParts(now)
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
+export function formatFriendlyDate(dateStr: string): string {
+  // dateStr has no time component; parsing as UTC keeps the displayed date
+  // stable regardless of the server's local timezone.
+  return new Date(`${dateStr}T00:00:00Z`).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+export function formatFriendlyMonth(monthStr: string): string {
+  const [year, month] = monthStr.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
 export function formatTime12Hour(time24: string): string {
   const [hour, minute] = time24.split(':').map(Number)
   const period = hour >= 12 ? 'PM' : 'AM'
