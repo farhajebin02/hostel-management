@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Home, LogOut } from 'lucide-react'
+import { ChevronDown, Home, LogOut, Settings, UserCircle } from 'lucide-react'
 import { ADMIN_NAV, STUDENT_NAV } from '@/lib/navigation'
 
 const HOME_PATHS = new Set(['/admin', '/student'])
@@ -81,7 +81,15 @@ export function AppHeader({
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+            <div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+              <Link
+                href={role === 'admin' ? '/admin/settings' : '/student/profile'}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                {role === 'admin' ? <Settings className="h-4 w-4" /> : <UserCircle className="h-4 w-4" />}
+                {role === 'admin' ? 'Settings' : 'My Profile'}
+              </Link>
               <form action="/logout" method="post">
                 <button
                   type="submit"

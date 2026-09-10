@@ -18,16 +18,16 @@ export function StatCard({
   href?: string
 }) {
   const content = (
-    <Card className="flex items-center gap-3 p-4!">
-      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBg}`}>
-        <Icon className={`h-6 w-6 ${iconColor}`} />
-      </div>
-      <div className="min-w-0 flex-1">
+    <Card className="relative p-4!">
+      {href && <ChevronRight className="absolute right-3 top-3 h-4 w-4 shrink-0 text-slate-300" />}
+      <div className="flex items-center gap-3 pr-5">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${iconBg}`}>
+          <Icon className={`h-5 w-5 ${iconColor}`} />
+        </div>
         <div className="text-2xl font-bold text-slate-900">{value}</div>
-        <div className="truncate text-xs font-medium text-slate-500">{label}</div>
       </div>
-      {href && <ChevronRight className="h-5 w-5 shrink-0 text-slate-300" />}
+      <div className="mt-2 text-xs font-medium leading-snug break-words text-slate-500">{label}</div>
     </Card>
   )
-  return href ? <a href={href}>{content}</a> : content
+  return href ? <a href={href} className="block">{content}</a> : content
 }
